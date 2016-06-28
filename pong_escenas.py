@@ -6,6 +6,7 @@ from pygame.locals import *
 # Constantes
 WIDTH = 640
 HEIGHT = 480
+MUSIC = 1
 
 # Clases
 # ---------------------------------------------------------------------
@@ -80,28 +81,27 @@ class Scene:
 
 class SceneHome(Scene):
     """Escena inicial del juego, esta es la primera que se carga cuando inicia"""
-    
-    # iniciar = None
-    # iniciar_rect = None
-    # options = None
-    # options_rect = None
-    # titulo = None
-    # titulo_rect = None
-    # selected = ''
 
     def __init__(self, director):
-        Scene.__init__(self, director)
-    	#Altura: Segundo cuarto
-    	self.iniciar, self.iniciar_rect = texto('Iniciar', WIDTH/2, HEIGHT/2+20, (250,255,78))
-    	#Altura: Tercer cuatro
-    	self.options, self.options_rect = texto('Opciones', WIDTH/2, 3*HEIGHT/4)
-    	self.titulo, self.titulo_rect = texto('Not Pong', WIDTH/2, HEIGHT/4, (255,255,255), 75)
-    	self.selected = 'iniciar'
-    	#Carga la musica
-    	pygame.mixer.music.load("music/title_theme.mp3")
-    	#Pone la música a funcionar
-    	# loop = -1 -> Loop infinito
-    	pygame.mixer.music.play(-1)
+		Scene.__init__(self, director)
+		#Altura: Segundo cuarto
+		self.iniciar, self.iniciar_rect = texto('Iniciar', WIDTH/2, HEIGHT/2+20)
+		#Altura: Tercer cuatro
+		self.options, self.options_rect = texto('Opciones', WIDTH/2, 3*HEIGHT/4)
+		self.titulo, self.titulo_rect = texto('Not Pong', WIDTH/2, HEIGHT/4, (255,255,255), 75)
+		self.selected = 'iniciar'
+
+		self.flecha = load_image("images/flecha.png")
+		self.flecha = pygame.transform.scale(self.flecha, (self.iniciar.get_width()/2+10,self.iniciar.get_height()/2+10))
+		self.flecha_rect = self.flecha.get_rect()
+		self.flecha_rect.centerx = WIDTH/2 - self.iniciar.get_width()
+		self.flecha_rect.centery = HEIGHT/2 + 20
+
+		#Carga la musica
+		pygame.mixer.music.load("music/title_theme.mp3")
+		#Pone la música a funcionar
+		# loop = -1 -> Loop infinito
+		pygame.mixer.music.play(-1)
         
     def on_update(self):
         pass
@@ -110,16 +110,11 @@ class SceneHome(Scene):
 		keys = pygame.key.get_pressed()
 		#Flechita hacia arriba
 		if keys[K_UP]:
-			#Altura: Segundo cuarto
-			self.iniciar, self.iniciar_rect = texto('Iniciar', WIDTH/2, HEIGHT/2+20, (250,255,78))
-			#Altura: Tercer cuatro
-			self.options, self.options_rect = texto('Opciones', WIDTH/2, 3*HEIGHT/4, (255,255,255))
+			self.flecha_rect.centery = HEIGHT/2 + 20
 			self.selected = 'iniciar'
 		# Flechita hacia abajo
 		if keys[K_DOWN]:
-			self.iniciar, self.iniciar_rect = texto('Iniciar', WIDTH/2, HEIGHT/2+20, (255,255,255))
-			#Altura: Tercer cuatro
-			self.options, self.options_rect = texto('Opciones', WIDTH/2, 3*HEIGHT/4, (250,255,78))
+			self.flecha_rect.centery = 3*HEIGHT/4
 			self.selected = 'opciones'
  		
 		if keys[K_RETURN]:
@@ -130,6 +125,7 @@ class SceneHome(Scene):
 
     def on_draw(self, screen):
     	#Renderiza las letras
+    	screen.blit(self.flecha, self.flecha_rect)
     	screen.blit(self.titulo, self.titulo_rect)
     	screen.blit(self.iniciar, self.iniciar_rect)
     	screen.blit(self.options, self.options_rect)
@@ -140,8 +136,9 @@ class SceneGame(Scene):
 	def __init__(self, director):
 		Scene.__init__(self, director)
 		pygame.mixer.music.stop()
-		pygame.mixer.music.load("music/game_theme.mp3")
-		pygame.mixer.music.play(-1)
+		if MUSIC == 1:
+			pygame.mixer.music.load("music/game_theme.mp3")
+			pygame.mixer.music.play(-1)
 
 		''' Define el nombre de la ventana'''
 		pygame.display.set_caption("Not Pong")
@@ -182,7 +179,7 @@ class SceneGame(Scene):
 		pass
 
 	def on_draw(self, screen):
-		''' Actualiza los cambios ocurridos en la pantalla'''
+		''' Actualiza los cambios ocurridos en la pantalla '''
 		screen.blit(self.background_image, (0, 0))
 		screen.blit(self.bola.image, self.bola.rect)
 		screen.blit(self.pala_jug.image, self.pala_jug.rect)
@@ -190,21 +187,6 @@ class SceneGame(Scene):
 		screen.blit(self.p_jug, self.p_jug_rect)
 		screen.blit(self.p_cpu, self.p_cpu_rect)
 		pygame.display.flip()
-
-class SceneOptions(Scene):
-	"""Escena del bucle de juego"""
-
-	def __init__(self, director):
-		Scene.__init__(self, director)
-
-	def on_update(self):
-		pass
-
-	def on_event(self):
-		pass
-
-	def on_draw(self, screen):
-		pass
 
 ''' Clase para el sprite de la pelota'''
 class Bola(pygame.sprite.Sprite):
