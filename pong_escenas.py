@@ -81,21 +81,22 @@ class Scene:
 class SceneHome(Scene):
     """Escena inicial del juego, esta es la primera que se carga cuando inicia"""
     
-    iniciar = None
-    iniciar_rect = None
-    options = None
-    options_rect = None
-    titulo = None
-    titulo_rect = None
+    # iniciar = None
+    # iniciar_rect = None
+    # options = None
+    # options_rect = None
+    # titulo = None
+    # titulo_rect = None
+    # selected = ''
 
     def __init__(self, director):
         Scene.__init__(self, director)
     	#Altura: Segundo cuarto
-    	self.iniciar, self.iniciar_rect = texto('Iniciar', WIDTH/2, HEIGHT/2)
+    	self.iniciar, self.iniciar_rect = texto('Iniciar', WIDTH/2, HEIGHT/2+20, (250,255,78))
     	#Altura: Tercer cuatro
     	self.options, self.options_rect = texto('Opciones', WIDTH/2, 3*HEIGHT/4)
     	self.titulo, self.titulo_rect = texto('Not Pong', WIDTH/2, HEIGHT/4, (255,255,255), 75)
-
+    	self.selected = 'iniciar'
     	#Carga la musica
     	pygame.mixer.music.load("music/title_theme.mp3")
     	#Pone la música a funcionar
@@ -110,15 +111,23 @@ class SceneHome(Scene):
 		#Flechita hacia arriba
 		if keys[K_UP]:
 			#Altura: Segundo cuarto
-			self.iniciar, self.iniciar_rect = texto('Iniciar', WIDTH/2, HEIGHT/2, (250,255,78))
+			self.iniciar, self.iniciar_rect = texto('Iniciar', WIDTH/2, HEIGHT/2+20, (250,255,78))
 			#Altura: Tercer cuatro
 			self.options, self.options_rect = texto('Opciones', WIDTH/2, 3*HEIGHT/4, (255,255,255))
+			self.selected = 'iniciar'
 		# Flechita hacia abajo
 		if keys[K_DOWN]:
-			self.iniciar, self.iniciar_rect = texto('Iniciar', WIDTH/2, HEIGHT/2, (255,255,255))
+			self.iniciar, self.iniciar_rect = texto('Iniciar', WIDTH/2, HEIGHT/2+20, (255,255,255))
 			#Altura: Tercer cuatro
 			self.options, self.options_rect = texto('Opciones', WIDTH/2, 3*HEIGHT/4, (250,255,78))
- 
+			self.selected = 'opciones'
+ 		
+		if keys[K_RETURN]:
+			if self.selected == 'iniciar':
+				scene = SceneGame(self.director)
+				self.director.change_scene(scene)
+			#elif self.selected == 'opciones':
+
     def on_draw(self, screen):
     	#Renderiza las letras
     	screen.blit(self.titulo, self.titulo_rect)
@@ -132,14 +141,52 @@ class SceneGame(Scene):
 		Scene.__init__(self, director)
 		pygame.mixer.music.stop()
 
+		''' Define el nombre de la ventana'''
+		pygame.display.set_caption("Not Pong")
+
+		''' Carga de imagen para el fondo'''
+		self.background_image = load_image('images/fondo_pong.png')
+
+		''' Carga de la pelotica '''
+		self.bola = Bola()
+
+		''' Carga jugador (a 30px de la izq)'''
+		self.pala_jug = Pala(30)
+
+		''' Carga cou (a 30px a la drch)'''
+		self.pala_cpu = Pala(WIDTH - 30)
+		self.pala_cpu.speed = 0.4
+
+		''' Reloj de juego '''
+		self.clock = pygame.time.Clock()
+
+		''' Puntuacion de los jugadores [J1, J2]'''
+		self.puntos = [0, 0]
+
 	def on_update(self):
-		pass
+		time = self.clock.tick(60)
+		keys = pygame.key.get_pressed()
+		''' Lista de eventos de pygame'''
+		
+		#Actualizar la posicion de la pelota y de la pala
+		self.puntos = self.bola.actualizar(time, self.pala_jug, self.pala_cpu, self.puntos)
+		self.pala_jug.mover(time, keys)
+		self.pala_cpu.ia(time, self.bola)
+		self.p_jug, self.p_jug_rect = texto(str(self.puntos[0]), WIDTH/4, 40)
+		self.p_cpu, self.p_cpu_rect = texto(str(self.puntos[1]), WIDTH-WIDTH/4, 40)
 
 	def on_event(self):
 		pass
 
 	def on_draw(self, screen):
-		pass
+		''' Actualiza los cambios ocurridos en la pantalla'''
+		screen.blit(self.background_image, (0, 0))
+		screen.blit(self.bola.image, self.bola.rect)
+		screen.blit(self.pala_jug.image, self.pala_jug.rect)
+		screen.blit(self.pala_cpu.image, self.pala_cpu.rect)
+		screen.blit(self.p_jug, self.p_jug_rect)
+		screen.blit(self.p_cpu, self.p_cpu_rect)
+		pygame.display.flip()
 
 class SceneOptions(Scene):
 	"""Escena del bucle de juego"""
