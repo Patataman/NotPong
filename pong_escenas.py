@@ -140,6 +140,8 @@ class SceneGame(Scene):
 	def __init__(self, director):
 		Scene.__init__(self, director)
 		pygame.mixer.music.stop()
+		pygame.mixer.music.load("music/game_theme.mp3")
+		pygame.mixer.music.play(-1)
 
 		''' Define el nombre de la ventana'''
 		pygame.display.set_caption("Not Pong")
@@ -162,6 +164,7 @@ class SceneGame(Scene):
 
 		''' Puntuacion de los jugadores [J1, J2]'''
 		self.puntos = [0, 0]
+
 
 	def on_update(self):
 		time = self.clock.tick(60)
