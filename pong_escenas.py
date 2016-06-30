@@ -41,10 +41,10 @@ class Director:
 						self.quit()
 
 			# detecta eventos
-			self.scene.on_event()
+			self.scene.on_event(time)
 
 			# actualiza la escena
-			self.scene.on_update()
+			self.scene.on_update(time)
 
 			# dibuja la pantalla
 			self.scene.on_draw(self.screen)
@@ -103,10 +103,10 @@ class SceneHome(Scene):
 		# loop = -1 -> Loop infinito
 		pygame.mixer.music.play(-1)
         
-    def on_update(self):
+    def on_update(self, time):
         pass
  
-    def on_event(self):
+    def on_event(self, time):
 		keys = pygame.key.get_pressed()
 		#Flechita hacia arriba
 		if keys[K_UP]:
@@ -124,11 +124,12 @@ class SceneHome(Scene):
 			#elif self.selected == 'opciones':
 
     def on_draw(self, screen):
-    	#Renderiza las letras
-    	screen.blit(self.flecha, self.flecha_rect)
-    	screen.blit(self.titulo, self.titulo_rect)
-    	screen.blit(self.iniciar, self.iniciar_rect)
-    	screen.blit(self.options, self.options_rect)
+		#Renderiza las letras
+		screen.fill((0,0,0))
+		screen.blit(self.titulo, self.titulo_rect)
+		screen.blit(self.flecha, self.flecha_rect)
+		screen.blit(self.iniciar, self.iniciar_rect)
+		screen.blit(self.options, self.options_rect)
 
 class SceneGame(Scene):
 	"""Escena del bucle de juego"""
@@ -141,7 +142,7 @@ class SceneGame(Scene):
 			pygame.mixer.music.play(-1)
 
 		''' Define el nombre de la ventana'''
-		pygame.display.set_caption("Not Pong")
+		#pygame.display.set_caption("Not Pong")
 
 		''' Carga de imagen para el fondo'''
 		self.background_image = load_image('images/fondo_pong.png')
@@ -157,26 +158,23 @@ class SceneGame(Scene):
 		self.pala_cpu.speed = 0.4
 
 		''' Reloj de juego '''
-		self.clock = pygame.time.Clock()
+		#self.clock = pygame.time.Clock()
 
 		''' Puntuacion de los jugadores [J1, J2]'''
 		self.puntos = [0, 0]
 
 
-	def on_update(self):
-		time = self.clock.tick(60)
-		keys = pygame.key.get_pressed()
-		''' Lista de eventos de pygame'''
-		
+	def on_update(self, time):
 		#Actualizar la posicion de la pelota y de la pala
 		self.puntos = self.bola.actualizar(time, self.pala_jug, self.pala_cpu, self.puntos)
-		self.pala_jug.mover(time, keys)
 		self.pala_cpu.ia(time, self.bola)
 		self.p_jug, self.p_jug_rect = texto(str(self.puntos[0]), WIDTH/4, 40)
 		self.p_cpu, self.p_cpu_rect = texto(str(self.puntos[1]), WIDTH-WIDTH/4, 40)
 
-	def on_event(self):
-		pass
+	def on_event(self, time):
+		keys = pygame.key.get_pressed()
+		
+		self.pala_jug.mover(time, keys)
 
 	def on_draw(self, screen):
 		''' Actualiza los cambios ocurridos en la pantalla '''
@@ -186,7 +184,6 @@ class SceneGame(Scene):
 		screen.blit(self.pala_cpu.image, self.pala_cpu.rect)
 		screen.blit(self.p_jug, self.p_jug_rect)
 		screen.blit(self.p_cpu, self.p_cpu_rect)
-		pygame.display.flip()
 
 ''' Clase para el sprite de la pelota'''
 class Bola(pygame.sprite.Sprite):
