@@ -40,8 +40,8 @@ class Director:
 					if event.key == pygame.K_ESCAPE:
 						self.quit()
 
-			# detecta eventos
-			self.scene.on_event(time)
+				# detecta eventos
+				self.scene.on_event(time, event)
 
 			# actualiza la escena
 			self.scene.on_update(time)
@@ -80,56 +80,128 @@ class Scene:
         raise NotImplemented("Tiene que implementar el método on_draw.")
 
 class SceneHome(Scene):
-    """Escena inicial del juego, esta es la primera que se carga cuando inicia"""
+	"""Escena inicial del juego, esta es la primera que se carga cuando inicia"""
 
-    def __init__(self, director):
+	def __init__(self, director):
 		Scene.__init__(self, director)
+
 		#Altura: Segundo cuarto
 		self.iniciar, self.iniciar_rect = texto('Iniciar', WIDTH/2, HEIGHT/2+20)
 		#Altura: Tercer cuatro
 		self.options, self.options_rect = texto('Opciones', WIDTH/2, 3*HEIGHT/4)
 		self.titulo, self.titulo_rect = texto('Not Pong', WIDTH/2, HEIGHT/4, (255,255,255), 75)
-		self.selected = 'iniciar'
+
+		self.menu = [self.iniciar, self.options]
+		self.alturas = [HEIGHT/2+20, 3*HEIGHT/4]
+
+		self.selected = 0
 
 		self.flecha = load_image("images/flecha.png")
 		self.flecha = pygame.transform.scale(self.flecha, (self.iniciar.get_width()/2+10,self.iniciar.get_height()/2+10))
 		self.flecha_rect = self.flecha.get_rect()
-		self.flecha_rect.centerx = WIDTH/2 - self.iniciar.get_width()
-		self.flecha_rect.centery = HEIGHT/2 + 20
+		self.flecha_rect.centerx = WIDTH/2 - self.menu[self.selected].get_width()
+		self.flecha_rect.centery = self.alturas[self.selected]
 
 		#Carga la musica
 		pygame.mixer.music.load("music/title_theme.mp3")
 		#Pone la música a funcionar
 		# loop = -1 -> Loop infinito
 		pygame.mixer.music.play(-1)
-        
-    def on_update(self, time):
-        pass
- 
-    def on_event(self, time):
-		keys = pygame.key.get_pressed()
-		#Flechita hacia arriba
-		if keys[K_UP]:
-			self.flecha_rect.centery = HEIGHT/2 + 20
-			self.selected = 'iniciar'
-		# Flechita hacia abajo
-		if keys[K_DOWN]:
-			self.flecha_rect.centery = 3*HEIGHT/4
-			self.selected = 'opciones'
- 		
-		if keys[K_RETURN]:
-			if self.selected == 'iniciar':
-				scene = SceneGame(self.director)
-				self.director.change_scene(scene)
-			#elif self.selected == 'opciones':
 
-    def on_draw(self, screen):
+	def on_update(self, time):
+		pass
+
+	def on_event(self, time, event):
+		#Flechita hacia arriba
+		keys = pygame.key.get_pressed()
+		print event
+		if pygame.KEYDOWN:
+			if keys[K_UP]:
+				self.selected = self.selected - 1 if self.selected > 0 else 0
+				self.flecha_rect.centery = self.alturas[self.selected]
+			# Flechita hacia abajo
+			if keys[K_DOWN]:
+				self.selected = self.selected + 1 if self.selected<(len(self.menu)-1) else self.selected
+				self.flecha_rect.centery = self.alturas[self.selected]
+	 		
+			if keys[K_RETURN]:
+				if self.selected == 0:
+					scene = SceneGame(self.director)
+					self.director.change_scene(scene)
+				if self.selected == 1:
+					scene = SceneOptions(self.director)
+					self.director.change_scene(scene)			
+
+	def on_draw(self, screen):
 		#Renderiza las letras
 		screen.fill((0,0,0))
 		screen.blit(self.titulo, self.titulo_rect)
 		screen.blit(self.flecha, self.flecha_rect)
 		screen.blit(self.iniciar, self.iniciar_rect)
 		screen.blit(self.options, self.options_rect)
+
+class SceneOptions(Scene):
+	"""Escena del bucle de juego"""
+
+	def __init__(self, director):
+		Scene.__init__(self, director)
+		#Altura: Segundo cuarto
+		self.musica, self.musica_rect = texto('Musica', WIDTH/2, HEIGHT/2+20)
+		#Altura: Tercer cuatro
+		self.resol, self.resol_rect = texto('Resolucion', WIDTH/2, 3*HEIGHT/4)
+		self.atras, self.atras_rect = texto('Atras', WIDTH/6, HEIGHT-40)
+		self.titulo, self.titulo_rect = texto('Not Pong', WIDTH/2, HEIGHT/4, (255,255,255), 75)
+
+		self.menu = [self.musica, self.resol, self.atras]
+		self.dim = [[WIDTH/2, HEIGHT/2+20], [WIDTH/2,3*HEIGHT/4], [WIDTH/6,HEIGHT-40]]
+
+		self.selected = 0
+
+		self.flecha = load_image("images/flecha.png")
+		self.flecha = pygame.transform.scale(self.flecha, (self.musica.get_width()/2+10,self.musica.get_height()/2+10))
+		self.flecha_rect = self.flecha.get_rect()
+		self.flecha_rect.centerx = self.dim[self.selected][0] - self.menu[self.selected].get_width()
+		self.flecha_rect.centery = self.dim[self.selected][1]
+
+	def on_update(self, time):
+		pass
+
+	def on_event(self, time, event):
+		keys = pygame.key.get_pressed()
+
+		if pygame.KEYDOWN:
+			#Flechita hacia arriba
+			if keys[K_UP]:
+				self.selected = self.selected - 1 if self.selected > 0 else 0
+				self.flecha_rect.centery = self.dim[self.selected][1]
+				self.flecha_rect.centerx = self.dim[self.selected][0] - self.menu[self.selected].get_width()
+			# Flechita hacia abajo
+			if keys[K_DOWN]:
+				self.selected = self.selected + 1 if self.selected<(len(self.menu)-1) else self.selected
+				self.flecha_rect.centery = self.dim[self.selected][1]
+				self.flecha_rect.centerx = self.dim[self.selected][0] - self.menu[self.selected].get_width()
+	 		
+			if keys[K_RETURN]:
+				if self.selected == 0:
+					global MUSIC
+					MUSIC = 0 if MUSIC == 1 else 1
+					if MUSIC == 0:
+						pygame.mixer.music.stop()
+					if MUSIC == 1:
+						pygame.mixer.music.load("music/title_theme.mp3")
+						pygame.mixer.music.play(-1)
+				if self.selected == 3:
+					scene = SceneHome(self.director)
+					self.director.change_scene(scene)
+
+	def on_draw(self, screen):
+		#Renderiza las letras
+		screen.fill((0,0,0))
+		screen.blit(self.titulo, self.titulo_rect)
+		screen.blit(self.flecha, self.flecha_rect)
+		screen.blit(self.musica, self.musica_rect)
+		screen.blit(self.resol, self.resol_rect)
+		screen.blit(self.atras, self.atras_rect)
 
 class SceneGame(Scene):
 	"""Escena del bucle de juego"""
