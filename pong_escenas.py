@@ -4,9 +4,11 @@
 import pygame, sys, random
 from pygame.locals import *
 # Constantes
-WIDTH = 640
-HEIGHT = 480
 MUSIC = 1
+RES = 0%3
+RESOLUTION = [(640,480), (800,600), (1024,768)]
+WIDTH = RESOLUTION[RES][0]
+HEIGHT = RESOLUTION[RES][1]
 
 # Clases
 # ---------------------------------------------------------------------
@@ -20,7 +22,7 @@ class Director:
 	derivados de Scene."""
 
 	def __init__(self):
-		self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
+		self.screen = pygame.display.set_mode(RESOLUTION[0])
 		pygame.display.set_caption("Not Pong")
 		self.scene = None
 		self.quit_flag = False
@@ -29,7 +31,7 @@ class Director:
 	def loop(self):
 		"Pone en funcionamiento el juego."
 
-		pygame.key.set_repeat(10, 100)
+		pygame.key.set_repeat(10, 200)
 		while not self.quit_flag:
 			time = self.clock.tick(60)
 
@@ -148,7 +150,7 @@ class SceneOptions(Scene):
 		#Altura: Segundo cuarto
 		self.musica, self.musica_rect = texto('Musica', WIDTH/2, HEIGHT/2+20)
 		#Altura: Tercer cuatro
-		self.resol, self.resol_rect = texto('Resolucion', WIDTH/2, 3*HEIGHT/4)
+		self.resol, self.resol_rect = texto('Resolucion (No furula)', WIDTH/2, 3*HEIGHT/4)
 		self.atras, self.atras_rect = texto('Atras', WIDTH/6, HEIGHT-40)
 		self.titulo, self.titulo_rect = texto('Not Pong', WIDTH/2, HEIGHT/4, (255,255,255), 75)
 
@@ -160,7 +162,7 @@ class SceneOptions(Scene):
 		self.flecha = load_image("images/flecha.png")
 		self.flecha = pygame.transform.scale(self.flecha, (self.musica.get_width()/2+10,self.musica.get_height()/2+10))
 		self.flecha_rect = self.flecha.get_rect()
-		self.flecha_rect.centerx = self.dim[self.selected][0] - self.menu[self.selected].get_width()
+		self.flecha_rect.centerx = self.dim[self.selected][0] - self.menu[self.selected].get_width()/2 - 20
 		self.flecha_rect.centery = self.dim[self.selected][1]
 
 	def on_update(self, time):
@@ -174,12 +176,12 @@ class SceneOptions(Scene):
 			if keys[K_UP]:
 				self.selected = self.selected - 1 if self.selected > 0 else 0
 				self.flecha_rect.centery = self.dim[self.selected][1]
-				self.flecha_rect.centerx = self.dim[self.selected][0] - self.menu[self.selected].get_width()
+				self.flecha_rect.centerx = self.dim[self.selected][0] - self.menu[self.selected].get_width()/2 - 20
 			# Flechita hacia abajo
 			if keys[K_DOWN]:
 				self.selected = self.selected + 1 if self.selected<(len(self.menu)-1) else self.selected
 				self.flecha_rect.centery = self.dim[self.selected][1]
-				self.flecha_rect.centerx = self.dim[self.selected][0] - self.menu[self.selected].get_width()
+				self.flecha_rect.centerx = self.dim[self.selected][0] - self.menu[self.selected].get_width()/2 - 20
 	 		
 			if keys[K_RETURN]:
 				if self.selected == 0:
