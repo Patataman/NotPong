@@ -29,6 +29,7 @@ class Director:
 	def loop(self):
 		"Pone en funcionamiento el juego."
 
+		pygame.key.set_repeat(10, 100)
 		while not self.quit_flag:
 			time = self.clock.tick(60)
 
@@ -42,7 +43,6 @@ class Director:
 
 				# detecta eventos
 				self.scene.on_event(time, event)
-
 			# actualiza la escena
 			self.scene.on_update(time)
 
@@ -103,10 +103,11 @@ class SceneHome(Scene):
 		self.flecha_rect.centery = self.alturas[self.selected]
 
 		#Carga la musica
-		pygame.mixer.music.load("music/title_theme.mp3")
-		#Pone la música a funcionar
-		# loop = -1 -> Loop infinito
-		pygame.mixer.music.play(-1)
+		if not pygame.mixer.music.get_busy() and MUSIC == 1:
+			pygame.mixer.music.load("music/title_theme.mp3")
+			#Pone la música a funcionar
+			# loop = -1 -> Loop infinito
+			pygame.mixer.music.play(-1)
 
 	def on_update(self, time):
 		pass
@@ -114,7 +115,6 @@ class SceneHome(Scene):
 	def on_event(self, time, event):
 		#Flechita hacia arriba
 		keys = pygame.key.get_pressed()
-		print event
 		if pygame.KEYDOWN:
 			if keys[K_UP]:
 				self.selected = self.selected - 1 if self.selected > 0 else 0
@@ -190,7 +190,7 @@ class SceneOptions(Scene):
 					if MUSIC == 1:
 						pygame.mixer.music.load("music/title_theme.mp3")
 						pygame.mixer.music.play(-1)
-				if self.selected == 3:
+				if self.selected == 2:
 					scene = SceneHome(self.director)
 					self.director.change_scene(scene)
 
@@ -208,6 +208,7 @@ class SceneGame(Scene):
 
 	def __init__(self, director):
 		Scene.__init__(self, director)
+		pygame.key.set_repeat(10, 10)
 		pygame.mixer.music.stop()
 		if MUSIC == 1:
 			pygame.mixer.music.load("music/game_theme.mp3")
@@ -243,7 +244,7 @@ class SceneGame(Scene):
 		self.p_jug, self.p_jug_rect = texto(str(self.puntos[0]), WIDTH/4, 40)
 		self.p_cpu, self.p_cpu_rect = texto(str(self.puntos[1]), WIDTH-WIDTH/4, 40)
 
-	def on_event(self, time):
+	def on_event(self, time, event):
 		keys = pygame.key.get_pressed()
 		
 		self.pala_jug.mover(time, keys)
