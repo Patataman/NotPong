@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Módulos
-import pygame, sys, random
+import pygame, sys, random, copy
 from pygame.locals import *
 # Constantes
 MUSIC = 1
@@ -232,17 +232,30 @@ class SceneGame(Scene):
 		self.pala_cpu = Pala(WIDTH - 30)
 		self.pala_cpu.speed = 0.4
 
-		''' Reloj de juego '''
+		''' Reloj de juego ''' #Heredado
 		#self.clock = pygame.time.Clock()
 
 		''' Puntuacion de los jugadores [J1, J2]'''
 		self.puntos = [0, 0]
 
+		'''Para que no comience al momento cuando se marca'''
+		self.count = 3.0
+		self.count_text, self.count_rect = texto(str(self.count), WIDTH/2, HEIGHT/2, (255, 255, 255), 60)
+
 
 	def on_update(self, time):
-		#Actualizar la posicion de la pelota y de la pala
-		self.puntos = self.bola.actualizar(time, self.pala_jug, self.pala_cpu, self.puntos)
-		self.pala_cpu.ia(time, self.bola)
+		if self.count > 0:
+			self.count_text, self.count_rect = texto(str(int(self.count)+1), WIDTH/2, HEIGHT/2, (255, 255, 255), 60)
+			self.count -= 1.0/60
+		else:
+			#Actualizar la posicion de la pelota y de la pala
+			auxP = copy.copy(self.puntos)
+			self.puntos = self.bola.actualizar(time, self.pala_jug, self.pala_cpu, self.puntos)
+			if auxP != self.puntos:
+				self.count = 3.0 
+			else: 
+				self.count = 0.0
+			self.pala_cpu.ia(time, self.bola)
 		self.p_jug, self.p_jug_rect = texto(str(self.puntos[0]), WIDTH/4, 40)
 		self.p_cpu, self.p_cpu_rect = texto(str(self.puntos[1]), WIDTH-WIDTH/4, 40)
 
@@ -259,6 +272,10 @@ class SceneGame(Scene):
 		screen.blit(self.pala_cpu.image, self.pala_cpu.rect)
 		screen.blit(self.p_jug, self.p_jug_rect)
 		screen.blit(self.p_cpu, self.p_cpu_rect)
+
+		if self.count > 0:
+			screen.blit(self.count_text, self.count_rect)
+			
 
 ''' Clase para el sprite de la pelota'''
 class Bola(pygame.sprite.Sprite):
@@ -293,7 +310,8 @@ class Bola(pygame.sprite.Sprite):
 		else:
 			mult1 = 1
 			mult2 = -1
-		self.speed = [mult1*random.uniform(0.3, 0.6), mult2*random.uniform(0.3, 0.6)]
+
+		self.speed = [mult1*random.uniform(0.3, 0.5), mult2*random.uniform(0.3, 0.5)]
 
 	def actualizar(self, time, pala_jug, pala_cpu, puntos):
 		# Espacio = V * T
