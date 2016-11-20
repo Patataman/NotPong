@@ -42,7 +42,7 @@ class Bola(pygame.sprite.Sprite):
 		else:
 			mult1 = 1
 			mult2 = -1
-		self.speed = [mult1*0.35, mult2*0.35]
+		self.speed = [mult1*random.uniform(0.3, 0.6), mult2*random.uniform(0.3, 0.6)]
 
 	def actualizar(self, time, pala_jug, pala_cpu, puntos):
 		# Espacio = V * T
